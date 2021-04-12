@@ -7,18 +7,10 @@ import json
 import numpy as np
 
 graphs_node_label_ids= []
-graphs_node_symbols = []
-graphs_argument_indices = []
 graphs_adjacency_lists = []
-graphs_argument_scores = []
-parsed_arguments = []
-graphs_control_location_indices = []
-graphs_label_indices = []
-graphs_learning_labels = []
 total_number_of_node = 0
 
-file_name_list = []
-skipped_file_list=[]
+
 
 def read_json():
     with open('04.c_000.smt2.hybrid-layerHornGraph.JSON') as f:
@@ -32,19 +24,16 @@ def read_json():
 
 def main():
     read_json()
-    node_to_graph_map = []
-    for i, total_number_of_node in enumerate(graphs_node_label_ids):
-        node_to_graph_map.append(tf.fill(dims = (total_number_of_node,), value = i))
-    node_to_graph_map=tf.concat(node_to_graph_map, 0)
-
-    
-
+    feature_list = tf.random.normal(shape = (0,total_number_of_node))
+    #for j in enumerate(graphs_node_label_ids):
+        #graphs_node_label_ids.append(i)
+    node_features = np.column_stack((graphs_node_label_ids,feature_list))
     
     input = GNNInput(
        
-         node_features = (graphs_node_label_ids, 3),
+         node_features = node_features, #need a matrix 
          adjacency_lists = graphs_adjacency_lists,
-         node_to_graph_map = node_to_graph_map,
+         node_to_graph_map = tf.fill(dims=(total_number_of_node,), value=0),
          num_graphs = 1,
          )
     

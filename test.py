@@ -4,8 +4,8 @@ import tf2_gnn
 
 def main():
 
-    NodeNumberList=tf.constant([8,4,7], shape=[ 3,])
-    NodeNumberList = tf.matrix_inverse(NodeNumberList)
-    print(NodeNumberList)
+    feature_list = tf.random.normal(shape = (0,10))
+    
+    print(feature_list)
 
 main()
