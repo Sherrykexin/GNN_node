@@ -12,26 +12,22 @@ total_number_of_node = 0
 
 
 
-def read_json():
-    with open('04.c_000.smt2.hybrid-layerHornGraph.JSON') as f:
+def read_json(file_path):
+    
+    with open(file_path) as f:
         loaded_graph = json.load(f)
         graphs_node_label_ids.append(loaded_graph["nodeIds"])  #lists of node id
         graphs_adjacency_lists.append(loaded_graph["binaryAdjacentList"]) #lists of adjacency lists
         total_number_of_node = len(loaded_graph["nodeIds"])
-        #print (graphs_node_label_ids)
-        #print("length is " ,total_number_of_node)
-         
+        return total_number_of_node
 
 def main():
-    read_json()
-    feature_list = tf.random.normal(shape = (0,total_number_of_node))
-    #for j in enumerate(graphs_node_label_ids):
-        #graphs_node_label_ids.append(i)
-    node_features = np.column_stack((graphs_node_label_ids,feature_list))
+    file_path= "04.c_000.smt2.hybrid-layerHornGraph.JSON"
+    total_number_of_node= read_json(file_path)
     
     input = GNNInput(
-       
-         node_features = node_features, #need a matrix 
+         
+         node_features = tf.random.normal(shape=(total_number_of_node, 3)), #need a matrix 
          adjacency_lists = graphs_adjacency_lists,
          node_to_graph_map = tf.fill(dims=(total_number_of_node,), value=0),
          num_graphs = 1,
