@@ -23,7 +23,7 @@ def main():
     nodeFeatureDim=3
     file_path= "04.c_000.smt2.hybrid-layerHornGraph.JSON"
     total_number_of_node= read_json(file_path)
-    NodeNumberList=total_number_of_node
+    NodeNumberList=[total_number_of_node]
     numberOfNode=total_number_of_node #total nodes in three graph
 
     node_label_ids = tf.constant(list(range(0, numberOfNode))) #[0, 1, 2,..., 14]
@@ -46,10 +46,10 @@ def main():
     parameters['num_edge_types']=len(adjacency_lists)
 
 
-    inputs={'NodeNumberList':NodeNumberList, #[8,4,3]
+    inputs={'NodeNumberList':NodeNumberList, #[97]
             'node_to_graph_map':node_to_graph_map,
-            'node_label_ids':node_label_ids, #[0, 1, 2,..., 14]
-            'num_edge_types':len(adjacency_lists), # 3
+            'node_label_ids':node_label_ids, #[0, 1, 2,..., 97]
+            'num_edge_types':len(adjacency_lists), # 97
             'adjacency_lists':adjacency_lists}
     for edge_type_idx,edgeType in enumerate(adjacency_lists): # 3,4,2
         inputs[f"adjacency_list_{edge_type_idx}"]=tf.TensorSpec(shape=(None, edgeType.shape[1]), dtype=tf.int32)
