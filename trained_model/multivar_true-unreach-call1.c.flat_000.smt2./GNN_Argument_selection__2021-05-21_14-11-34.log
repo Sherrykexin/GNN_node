@@ -1,0 +1,63 @@
+Initial valid metric: Accuracy = 0.988.
+== Epoch 1
+ Train:  0.5545996427536011 loss | Accuracy = 0.988 | 2.07 graphs/s
+ Valid:  0.3847408592700958 loss | Accuracy = 0.988 | 20.43 graphs/s
+== Epoch 2
+ Train:  0.3847408592700958 loss | Accuracy = 0.988 | 14.45 graphs/s
+ Valid:  0.2713746726512909 loss | Accuracy = 0.988 | 21.10 graphs/s
+== Epoch 3
+ Train:  0.2713746726512909 loss | Accuracy = 0.988 | 12.42 graphs/s
+ Valid:  0.18963459134101868 loss | Accuracy = 0.988 | 17.74 graphs/s
+== Epoch 4
+ Train:  0.18963459134101868 loss | Accuracy = 0.988 | 13.69 graphs/s
+ Valid:  0.1311347484588623 loss | Accuracy = 0.988 | 18.98 graphs/s
+== Epoch 5
+ Train:  0.1311347484588623 loss | Accuracy = 0.988 | 12.09 graphs/s
+ Valid:  0.09181921184062958 loss | Accuracy = 0.988 | 17.14 graphs/s
+== Epoch 6
+ Train:  0.09181921184062958 loss | Accuracy = 0.988 | 14.89 graphs/s
+ Valid:  0.06715282797813416 loss | Accuracy = 0.988 | 19.65 graphs/s
+== Epoch 7
+ Train:  0.06715282797813416 loss | Accuracy = 0.988 | 14.32 graphs/s
+ Valid:  0.05281362310051918 loss | Accuracy = 0.988 | 22.62 graphs/s
+== Epoch 8
+ Train:  0.05281362310051918 loss | Accuracy = 0.988 | 13.96 graphs/s
+ Valid:  0.0452742874622345 loss | Accuracy = 0.988 | 20.21 graphs/s
+== Epoch 9
+ Train:  0.0452742874622345 loss | Accuracy = 0.988 | 12.79 graphs/s
+ Valid:  0.041900526732206345 loss | Accuracy = 0.988 | 14.28 graphs/s
+== Epoch 10
+ Train:  0.041900526732206345 loss | Accuracy = 0.988 | 13.79 graphs/s
+ Valid:  0.04083593934774399 loss | Accuracy = 0.988 | 19.02 graphs/s
+== Epoch 11
+ Train:  0.04083593934774399 loss | Accuracy = 0.988 | 13.28 graphs/s
+ Valid:  0.04094475507736206 loss | Accuracy = 0.988 | 18.48 graphs/s
+== Epoch 12
+ Train:  0.04094475507736206 loss | Accuracy = 0.988 | 10.74 graphs/s
+ Valid:  0.04139652103185654 loss | Accuracy = 0.988 | 20.72 graphs/s
+== Epoch 13
+ Train:  0.04139652103185654 loss | Accuracy = 0.988 | 13.28 graphs/s
+ Valid:  0.04175238683819771 loss | Accuracy = 0.988 | 18.45 graphs/s
+== Epoch 14
+ Train:  0.04175238683819771 loss | Accuracy = 0.988 | 13.83 graphs/s
+ Valid:  0.041802193969488144 loss | Accuracy = 0.988 | 18.51 graphs/s
+== Epoch 15
+ Train:  0.041802193969488144 loss | Accuracy = 0.988 | 13.46 graphs/s
+ Valid:  0.041406940668821335 loss | Accuracy = 0.988 | 22.28 graphs/s
+== Epoch 16
+ Train:  0.041406940668821335 loss | Accuracy = 0.988 | 14.82 graphs/s
+ Valid:  0.040566667914390564 loss | Accuracy = 0.988 | 21.66 graphs/s
+== Epoch 17
+ Train:  0.040566667914390564 loss | Accuracy = 0.988 | 14.03 graphs/s
+ Valid:  0.039241891354322433 loss | Accuracy = 0.988 | 21.71 graphs/s
+== Epoch 18
+ Train:  0.039241891354322433 loss | Accuracy = 0.988 | 14.19 graphs/s
+ Valid:  0.037565864622592926 loss | Accuracy = 0.988 | 21.25 graphs/s
+== Epoch 19
+ Train:  0.037565864622592926 loss | Accuracy = 0.988 | 15.07 graphs/s
+ Valid:  0.03560278192162514 loss | Accuracy = 0.988 | 21.70 graphs/s
+== Epoch 20
+ Train:  0.03560278192162514 loss | Accuracy = 0.988 | 14.73 graphs/s
+ Valid:  0.03327936679124832 loss | Accuracy = 0.988 | 21.74 graphs/s
+Stopping training after 20 epochs without improvement on validation metric.
+Training took 2.941490888595581s. Best validation metric: -0.9883720874786377

@@ -158,7 +158,7 @@ def train_on_graphs(benchmark_name="unknown",label="rank",force_read=False,train
 
         true_Y=[]
         for data in iter(test_data):
-            #print(data[0]) #input
+            #print("wodedata debug",data[0]) #input
             true_Y.extend(np.array(data[1]["node_labels"]))
 
         error_loaded_model = (lambda : tf.keras.losses.MSE(true_Y, predicted_Y_loaded_model) \
@@ -417,11 +417,11 @@ def write_graph_to_pickle(benchmark,  data_fold=["train", "valid", "test"], labe
         #                                    sorted(glob.glob(path +df+"_data/"+ '*' + file_type + '.arguments'))):
         files_from_benchmark=set(sorted(glob.glob(path +df+"_data/"+ '*' + file_type + json_type)))
         file_set=(lambda : [f+json_type for f in file_list] if len(file_list)>0 else files_from_benchmark)()
-        print("file set debug", file_set)
-        print("file from benchmark debug", files_from_benchmark)
-        print("path is:", path)
-        print("file type debug", file_type)
-        print("json type debug", json_type)
+        #print("file set debug", file_set)
+        # print("file from benchmark debug", files_from_benchmark)
+        # print("path is:", path)
+        # print("file type debug", file_type)
+        # print("json type debug", json_type)
         #fileSet=set(sorted(glob.glob(path +df+"_data/"+ '*' + file_type + json_type))) #all .smt2.hyperedge.JSON file
         for fileGraph in file_set:
             fileName = fileGraph[:fileGraph.find(file_type + json_type) + len(file_type)]
@@ -429,9 +429,11 @@ def write_graph_to_pickle(benchmark,  data_fold=["train", "valid", "test"], labe
             # read graph
             print("read graph from",fileGraph)
             print("file_name",fileName)
+            print("max node",max_nodes_per_batch )
             with open(fileGraph) as f:
                 loaded_graph = json.load(f)
                 #debug check all field if equal to empty
+                #print("Debuuuuug",loaded_graph["nodeIds"])
                 if len(loaded_graph["nodeIds"]) == 0:
                     print("nodeIds==0"," skip ",fileName)
                     skipped_file_list.append(fileName)
@@ -492,6 +494,7 @@ def write_graph_to_pickle(benchmark,  data_fold=["train", "valid", "test"], labe
 
                     if json_type==".hyperEdgeHornGraph.JSON" or json_type==".equivalent-hyperedgeGraph.JSON" or json_type==".concretized-hyperedgeGraph.JSON": #read adjacency_lists
                         #for hyperedge horn graph
+                        #print("debug loaded hyperedge")
                         graphs_adjacency_lists.append([
                             np.array(loaded_graph["argumentEdges"]),
                             np.array(loaded_graph["guardASTEdges"]),
@@ -502,6 +505,7 @@ def write_graph_to_pickle(benchmark,  data_fold=["train", "valid", "test"], labe
                             np.array(loaded_graph["ternaryAdjacencyList"])
                         ])
                     else:
+                        #print("debug loaded",loaded_graph["predicateArgumentEdges"])
                         #for layer horn graph
                         graphs_adjacency_lists.append([
                             np.array(loaded_graph["predicateArgumentEdges"]),
@@ -530,14 +534,14 @@ def write_graph_to_pickle(benchmark,  data_fold=["train", "valid", "test"], labe
                             np.array(loaded_graph["binaryAdjacentList"]),
                             #np.array(loaded_graph["unknownEdges"])
                         ])
-                        print("graphs_adjacency_lists debug:", graphs_adjacency_lists)
+                        #print("graphs_adjacency_lists debug:", graphs_adjacency_lists)
                     total_number_of_node += len(loaded_graph["nodeIds"])
 
 
         pickle_data=parsed_graph_data(graphs_node_label_ids,graphs_argument_indices,graphs_adjacency_lists,
                                       graphs_argument_scores,total_number_of_node,graphs_control_location_indices,file_name_list,skipped_file_list,
                                       parsed_arguments,graphs_node_symbols,graphs_label_indices,graphs_learning_labels,vocabulary_set, token_map)
-        print("pickledata debug:",pickle_data.graphs_adjacency_lists)                       
+        #print("pickledata debug:",pickle_data.graphs_adjacency_lists)                       
         pickleWrite(pickle_data, "train-" +label+"-"+ graph_type +"-"+benchmark_name + "-gnnInput_" + df + "_data")
 
 
@@ -546,7 +550,8 @@ def form_GNN_inputs_and_labels(label="occurrence", datafold=["train", "valid", "
     benchmark_name = benchmark.replace("/", "-")
     for df in datafold:
         parsed_dot_file = pickleRead("train-" +label+"-"+ graph_type +"-"+benchmark_name + "-gnnInput_" + df + "_data")
-        print(parsed_dot_file.graphs_adjacency_lists)
+        #print("train-" +label+"-"+ graph_type +"-"+benchmark_name + "-gnnInput_" + df + "_data")
+        #print(parsed_dot_file.graphs_adjacency_lists)
         if label in gathered_nodes_binary_classification_task or label=="predicate_occurrence_in_clauses" or label=="argument_lower_bound" or label=="argument_upper_bound":
             form_predicate_occurrence_related_label_graph_sample(parsed_dot_file.graphs_node_label_ids,
                                                                     parsed_dot_file.graphs_node_symbols,
@@ -567,6 +572,7 @@ def form_GNN_inputs_and_labels(label="occurrence", datafold=["train", "valid", "
                                     parsed_dot_file.graphs_control_location_indices, parsed_dot_file.file_name_list,parsed_dot_file.skipped_file_list,
                                     parsed_dot_file.graphs_label_indices, parsed_dot_file.graphs_learning_labels,
                                     label, parsed_dot_file.vocabulary_set, parsed_dot_file.token_map, benchmark, df,graph_type)
+    print("debug voc set", parsed_dot_file.vocabulary_set)
 def get_batch_graph_sample_info(graphs_adjacency_lists,total_number_of_node,vocabulary_set,token_map):
     num_edge_types_list=[]
     for graph_edges in graphs_adjacency_lists:
@@ -667,6 +673,9 @@ def form_predicate_occurrence_related_label_graph_sample(graphs_node_label_ids,g
                                                                                                          graphs_learning_labels):
         raw_data_graph.file_names.append(file_name)
         # node tokenization
+        #print("debug token_map", token_map)
+        #token map contains the same thing as token
+        #print("debug node_symbols", node_symbols)
         tokenized_node_label_ids=tokenize_symbols(token_map,node_symbols)
 
         raw_data_graph.labels.append(learning_labels)
@@ -678,7 +687,9 @@ def form_predicate_occurrence_related_label_graph_sample(graphs_node_label_ids,g
             one_one_label = one_one_label + 1
         else:
             other_distribution = other_distribution + 1
-
+        print("debuggung tokenized node",tokenized_node_label_ids)
+        print("debugging learning label",learning_labels )
+        print("debugging node_indices",node_indices )
         # if(len(tokenized_node_label_ids)>130000):
         #     print("------debug------")
         #     print("file_name",file_name)
@@ -767,7 +778,7 @@ def form_argument_bound_label(graphs_argument_indices, graphs_learning_labels, g
             node_symbols_temp.append(one_graphs_node_symbols)
             adjacency_lists_temp.append(one_graphs_adjacency_lists)
             file_name_list_temp.append(one_file_name_list)
-            # print("one_graph_learning_labels", one_graph_learning_labels)
+            print("one_graph_learning_labels", one_graph_learning_labels)
             # print("temp_labels", temp_labels)
             # print("temp_indces", temp_indces)
     # if len(graphs_learning_labels_temp)==0:
@@ -923,6 +934,7 @@ def get_predicted_label_list_divided_by_file(dataset,predicted_Y_loaded_model):
 def build_vocabulary(datafold=["train", "valid", "test"], path="",json_type=".layerHornGraph.JSON"):
     vocabulary_set=set(["unknown_node","unknown_predicate","unkown_symblic_constant","unkown_predicate_argument",
                         "unknown_operator","unknown_constant","unknown_predicate_label"])
+    print("inside the vocab set is :" , vocabulary_set)
     for fold in datafold:
         for json_file in glob.glob(path+fold+"_data/*"+json_type):
             with open(json_file) as f:
@@ -934,7 +946,8 @@ def build_vocabulary(datafold=["train", "valid", "test"], path="",json_type=".la
     for word in sorted(vocabulary_set):
         token_map[word]=token_id
         token_id=token_id+1
-    #print("vocabulary_set",vocabulary_set)
+    print("vocabulary_set",vocabulary_set)
+    print("insidetoken is", token_map)
     return vocabulary_set,token_map
 
 def tokenize_symbols(token_map,node_symbols):

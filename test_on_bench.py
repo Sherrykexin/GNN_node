@@ -35,9 +35,9 @@ def main():
     # np.random.seed(0)
     # tf.random.set_seed(0)
 
-    hyper_parameters={"nodeFeatureDim":64,"num_layers":16,"regression_hidden_layer_size":[64],"threshold":0.5,"max_nodes_per_batch":1000}
+    hyper_parameters={"nodeFeatureDim":64,"num_layers":1,"regression_hidden_layer_size":[64],"threshold":0.5,"max_nodes_per_batch":100000}
     for label in label_list:
-        # parameter_list.append(
+        #parameter_list.append(
         #     parameters(relative_path="../benchmarks/"+benchmark_name,
         #                absolute_path="/home/cheli243/PycharmProjects/HintsLearning/benchmarks/"+benchmark_name,
         #                json_type=".hyperEdgeHornGraph.JSON", label=label))

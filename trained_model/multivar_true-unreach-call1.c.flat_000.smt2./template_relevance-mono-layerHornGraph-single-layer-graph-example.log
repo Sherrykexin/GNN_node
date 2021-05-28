@@ -1,0 +1,4 @@
+accuracy_list:[<tf.Tensor: shape=(), dtype=float64, numpy=0.9883720930232558>]
+accuracy mean:0.9883720930232558
+best_valid_epoch_list:5.0
+best_valid_epoch_average:5.0

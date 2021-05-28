@@ -1,0 +1,65 @@
+Initial valid metric: Accuracy = 0.123.
+== Epoch 1
+ Train:  0.8821176886558533 loss | Accuracy = 0.442 | 0.03 graphs/s
+ Valid:  1.4501276016235352 loss | Accuracy = 0.032 | 0.97 graphs/s
+== Epoch 2
+ Train:  0.9387744665145874 loss | Accuracy = 0.348 | 0.30 graphs/s
+ Valid:  0.6615908145904541 loss | Accuracy = 0.526 | 1.30 graphs/s
+  (Best epoch so far, target metric decreased to -0.5258064270019531 from -0.1225806474685669.)
+== Epoch 3
+ Train:  0.2654761075973511 loss | Accuracy = 0.968 | 0.48 graphs/s
+ Valid:  0.5280789136886597 loss | Accuracy = 0.829 | 2.16 graphs/s
+  (Best epoch so far, target metric decreased to -0.8290322422981262 from -0.5258064270019531.)
+== Epoch 4
+ Train:  0.4231846034526825 loss | Accuracy = 0.852 | 0.63 graphs/s
+ Valid:  0.15535317361354828 loss | Accuracy = 0.984 | 2.09 graphs/s
+  (Best epoch so far, target metric decreased to -0.9838709831237793 from -0.8290322422981262.)
+== Epoch 5
+ Train:  0.1435682624578476 loss | Accuracy = 0.994 | 0.36 graphs/s
+ Valid:  0.24652217328548431 loss | Accuracy = 0.994 | 1.75 graphs/s
+  (Best epoch so far, target metric decreased to -0.9935483932495117 from -0.9838709831237793.)
+== Epoch 6
+ Train:  0.1301148384809494 loss | Accuracy = 0.994 | 0.18 graphs/s
+ Valid:  0.11858749389648438 loss | Accuracy = 0.994 | 1.83 graphs/s
+== Epoch 7
+ Train:  0.05866599455475807 loss | Accuracy = 0.994 | 0.44 graphs/s
+ Valid:  0.061666034162044525 loss | Accuracy = 0.994 | 1.63 graphs/s
+== Epoch 8
+ Train:  0.07557980716228485 loss | Accuracy = 0.994 | 0.29 graphs/s
+ Valid:  0.0489775687456131 loss | Accuracy = 0.994 | 2.02 graphs/s
+== Epoch 9
+ Train:  0.041103288531303406 loss | Accuracy = 0.994 | 0.62 graphs/s
+ Valid:  0.0394488163292408 loss | Accuracy = 0.994 | 2.13 graphs/s
+== Epoch 10
+ Train:  0.04111717641353607 loss | Accuracy = 0.994 | 0.66 graphs/s
+ Valid:  0.03421735018491745 loss | Accuracy = 0.994 | 2.38 graphs/s
+== Epoch 11
+ Train:  0.030238594859838486 loss | Accuracy = 0.994 | 0.67 graphs/s
+ Valid:  0.042737919837236404 loss | Accuracy = 0.994 | 2.04 graphs/s
+== Epoch 12
+ Train:  0.03526545688509941 loss | Accuracy = 0.994 | 0.61 graphs/s
+ Valid:  0.03782694786787033 loss | Accuracy = 0.994 | 2.05 graphs/s
+== Epoch 13
+ Train:  0.03756509721279144 loss | Accuracy = 0.994 | 0.64 graphs/s
+ Valid:  0.051571935415267944 loss | Accuracy = 0.994 | 2.23 graphs/s
+== Epoch 14
+ Train:  0.03811461478471756 loss | Accuracy = 0.994 | 0.67 graphs/s
+ Valid:  0.055404238402843475 loss | Accuracy = 0.994 | 2.05 graphs/s
+== Epoch 15
+ Train:  0.044936828315258026 loss | Accuracy = 0.994 | 0.64 graphs/s
+ Valid:  0.041676443070173264 loss | Accuracy = 0.994 | 2.34 graphs/s
+== Epoch 16
+ Train:  0.038201939314603806 loss | Accuracy = 0.994 | 0.69 graphs/s
+ Valid:  0.037751454859972 loss | Accuracy = 0.994 | 2.40 graphs/s
+== Epoch 17
+ Train:  0.044807836413383484 loss | Accuracy = 0.994 | 0.68 graphs/s
+ Valid:  0.04605169966816902 loss | Accuracy = 0.994 | 1.68 graphs/s
+== Epoch 18
+ Train:  0.04916125908493996 loss | Accuracy = 0.994 | 0.32 graphs/s
+ Valid:  0.051627159118652344 loss | Accuracy = 0.994 | 1.88 graphs/s
+== Epoch 19
+ Train:  0.048033688217401505 loss | Accuracy = 0.994 | 0.29 graphs/s
+ Valid:  0.04871146380901337 loss | Accuracy = 0.994 | 1.70 graphs/s
+== Epoch 20
+ Train:  0.04364314302802086 loss | Accuracy = 0.994 | 0.53 graphs/s
+ Valid:  0.05051760748028755 loss | Accuracy = 0.994 | 2.21 graphs/s

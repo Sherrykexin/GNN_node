@@ -1,5 +1,0 @@
-Initial valid metric: Accuracy = 0.426.
-== Epoch 1
- Train:  0.8862727880477905 loss | Accuracy = 0.934 | 0.31 graphs/s
- Valid:  0.7887502908706665 loss | Accuracy = 0.967 | 15.69 graphs/s
-  (Best epoch so far, target metric decreased to -0.9672130942344666 from -0.4262295067310333.)
