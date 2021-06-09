@@ -15,7 +15,7 @@ from tf2_gnn.models import InvariantArgumentSelectionTask, InvariantNodeIdentify
 
 from Miscellaneous import pickleWrite, pickleRead, drawBinaryLabelPieChart
 from dotToGraphInfo import parseArgumentsFromJson
-from utils import plot_confusion_matrix,get_recall_and_precision,plot_ROC,assemble_name
+from utils import plot_confusion_matrix,get_recall_and_precision,plot_ROC,assemble_name,my_round_fun
 
 def train_on_graphs(benchmark_name="unknown",label="rank",force_read=False,train_n_times=1,path="../",file_type=".smt2",json_type=".JSON",form_label=False,GPU=False,pickle=True,hyper_parameters={}):
     gathered_nodes_binary_classification_task = ["predicate_occurrence_in_SCG", "argument_lower_bound_existence",
@@ -91,13 +91,15 @@ def train_on_graphs(benchmark_name="unknown",label="rank",force_read=False,train
     valid_loss_list_average = []
     test_loss_list_average = []
     mean_loss_list_average = []
-    error_loaded_model_average = []
+
     train_loss_average = []
     valid_loss_average = []
     test_loss_average = []
     best_valid_epoch_average = []
     accuracy_average=[]
     trained_model_path=None
+    error_loaded_model_average = []
+    error_memory_model_average=[]
 
     for n in range(train_n_times): # train n time to get average performance, default is one
         # initial different models by different training task
@@ -124,7 +126,8 @@ def train_on_graphs(benchmark_name="unknown",label="rank",force_read=False,train
         # process_train = multiprocessing.Process(train, args=(model,dataset,log,run_id,200,20,save_dir,quiet,None))
         # process_train.start()
         # process_train.join()
-        trained_model_path,train_loss_list,valid_loss_list,best_valid_epoch,train_metric_list,valid_metric_list = train(
+
+        trained_model_path,train_loss_list,valid_loss_list,best_valid_epoch,train_metric_list,valid_metric_list,weights_list_train ,weights_list_valid = train(
             model=model,
             dataset=dataset,
             log_fun=log,
@@ -138,19 +141,21 @@ def train_on_graphs(benchmark_name="unknown",label="rank",force_read=False,train
         print("trained_model_path", trained_model_path)
 
         test_data = dataset.get_tensorflow_dataset(DataFold.TEST)
-
+        weights_dict_dataset_saved = {} #loaded weights from saved file
         # use model in memory
-        _, _, test_results = model.run_one_epoch(test_data, training=False, quiet=quiet)
+        _, _, test_results,weights_dict_dataset = model.run_one_epoch(test_data, training=False, quiet=quiet)
         test_metric, test_metric_string = model.compute_epoch_metrics(test_results)
         predicted_Y_loaded_model_from_memory = model.predict(test_data)
+        rounded_predicted_Y_loaded_model_from_memory=my_round_fun(predicted_Y_loaded_model_from_memory,threshold=hyper_parameters["threshold"])
         print("test_metric_string model from memory", test_metric_string)
         print("test_metric model from memory", test_metric)
         print("predicted_Y_loaded_model_from_memory",tf.math.round(predicted_Y_loaded_model_from_memory))
         #load model from files
         loaded_model = tf2_gnn.cli_utils.model_utils.load_model_for_prediction(trained_model_path, dataset)
-        _, _, test_results = loaded_model.run_one_epoch(test_data, training=False, quiet=quiet)
+        _, _, test_results,weights_dict_dataset_saved = loaded_model.run_one_epoch(test_data, training=False, quiet=quiet)
         test_metric, test_metric_string = loaded_model.compute_epoch_metrics(test_results)
         predicted_Y_loaded_model = loaded_model.predict(test_data)
+        rounded_predicted_Y_loaded_model=my_round_fun(predicted_Y_loaded_model,threshold=hyper_parameters["threshold"])
         print("predicted_Y_loaded_model",tf.math.round(predicted_Y_loaded_model))
 
         print("test_metric_string",test_metric_string)
@@ -161,14 +166,18 @@ def train_on_graphs(benchmark_name="unknown",label="rank",force_read=False,train
             #print("wodedata debug",data[0]) #input
             true_Y.extend(np.array(data[1]["node_labels"]))
 
-        error_loaded_model = (lambda : tf.keras.losses.MSE(true_Y, predicted_Y_loaded_model) \
-            if label not in gathered_nodes_binary_classification_task else tf.keras.losses.binary_crossentropy(true_Y, predicted_Y_loaded_model))()
-        print("\n error of loaded_model", error_loaded_model)
+
 
         #print("true_Y", true_Y)
         #print("predicted_Y_loaded_model_from_memory", predicted_Y_loaded_model_from_memory)
         #print("predicted_Y_loaded_model", predicted_Y_loaded_model)
+        error_loaded_model = (lambda : tf.keras.losses.MSE(true_Y, predicted_Y_loaded_model) \
+            if label not in gathered_nodes_binary_classification_task else tf.keras.losses.binary_crossentropy(true_Y, predicted_Y_loaded_model))()
+        print("\n error of loaded_model", error_loaded_model)
 
+        error_memory_model = (lambda : tf.keras.losses.MSE(true_Y, predicted_Y_loaded_model) \
+            if label not in gathered_nodes_binary_classification_task else tf.keras.losses.binary_crossentropy(true_Y, predicted_Y_loaded_model_from_memory))()
+        print("\n error of loaded_model", error_loaded_model)
 
         mse_mean = tf.keras.losses.MSE([np.mean(true_Y)]*len(true_Y), true_Y)
         print("\n mse_mean_Y_and_True_Y", mse_mean)
@@ -177,9 +186,10 @@ def train_on_graphs(benchmark_name="unknown",label="rank",force_read=False,train
         accuracy = num_correct / len(predicted_Y_loaded_model)
         accuracy_average.append(accuracy)
 
-        test_loss_list_average.append(predicted_Y_loaded_model)
+        test_loss_list_average.append(predicted_Y_loaded_model_from_memory)
         mean_loss_list_average.append(mean_loss_list)
         error_loaded_model_average.append(error_loaded_model)
+        error_memory_model_average.append(error_memory_model)
         test_loss_average.append(predicted_Y_loaded_model[-1])
 
         train_loss_list_average.append(train_loss_list)
@@ -188,22 +198,27 @@ def train_on_graphs(benchmark_name="unknown",label="rank",force_read=False,train
         valid_loss_average.append(valid_loss_list[-1])
         best_valid_epoch_average.append(best_valid_epoch)
 
+
+       
+
     # get aberage training performance
     train_loss_list_average = np.mean(train_loss_list_average, axis=0)
     valid_loss_list_average = np.mean(valid_loss_list_average, axis=0)
     test_loss_list_average = np.mean(test_loss_list_average, axis=0)
     mean_loss_list_average = np.mean(mean_loss_list)
     error_loaded_model_average = np.mean(error_loaded_model_average)
+    error_memory_model_average = np.mean(error_memory_model_average)
     train_loss_average = np.mean(train_loss_average)
     valid_loss_average = np.mean(valid_loss_average)
     best_valid_epoch_average = np.mean(best_valid_epoch_average)
     mean_accuracy = np.mean(accuracy_average)
     write_accuracy_to_log(label, benchmark_name, accuracy_average, best_valid_epoch_average, graph_type)
     # visualize results
-    draw_training_results(train_loss_list_average, valid_loss_list_average, test_loss_list_average,
+    draw_training_results(train_loss_list_average, valid_loss_list_average,
                           mean_loss_list_average,
-                          error_loaded_model_average, valid_loss_list, true_Y, predicted_Y_loaded_model, label,
+                          error_memory_model_average, true_Y, predicted_Y_loaded_model, label,
                           benchmark_name, graph_type,gathered_nodes_binary_classification_task,hyper_parameters)
+    draw_weights_results(label,benchmark_name, graph_type,gathered_nodes_binary_classification_task,hyper_parameters,weights_list_train)                      
     write_train_results_to_log(dataset, predicted_Y_loaded_model, train_loss_average,
                                valid_loss_average, error_loaded_model, mean_loss_list, accuracy_average,
                                best_valid_epoch_average,hyper_parameters,
@@ -224,18 +239,22 @@ def write_accuracy_to_log(label, benchmark, accuracy_list, best_valid_epoch_list
         out_file.write("best_valid_epoch_average:" + str(best_valid_epoch_average) + "\n")
 
 
-def draw_training_results(train_loss_list_average, valid_loss_list_average, test_loss_list_average,
+def draw_training_results(train_loss_list_average, valid_loss_list_average,
                           mean_loss_list_average,
-                          mse_loaded_model_average, valid_loss_list, true_Y, predicted_Y_loaded_model, label,
+                          mse_loaded_model_average, true_Y, predicted_Y_loaded_model, label,
                           benchmark_name, graph_type,gathered_nodes_binary_classification_task,hyper_parameters):
     # mse on train, validation,test,mean
     plt.plot(train_loss_list_average, color="blue")
     plt.plot(valid_loss_list_average, color="green")
-    plt.plot([mean_loss_list_average] * len(valid_loss_list), color="red")
-    plt.plot([mse_loaded_model_average] * len(valid_loss_list), color="black")
-    y_range=[0,0.5]
-    plt.ylim(y_range)
-    plt.yticks(np.arange(min(y_range), max(y_range), 0.025))
+    plt.plot([mean_loss_list_average] * len(train_loss_list_average), color="red")
+    plt.plot([mse_loaded_model_average] * len(train_loss_list_average), color="black")
+    y_range=[0,max(max(train_loss_list_average),max(valid_loss_list_average))]
+    upper_bound=1#max(y_range)
+    grid=upper_bound/10
+    plt.ylim([min(y_range), upper_bound])
+    plt.yticks(np.arange(min(y_range), upper_bound, grid))
+    #plt.yscale('log')
+    #plt.ylim(bottom=0, top=15)
     plt.ylabel('loss')
     plt.xlabel('epochs')
     train_loss_legend = mpatches.Patch(color='blue', label='train_loss')
@@ -252,7 +271,7 @@ def draw_training_results(train_loss_list_average, valid_loss_list_average, test
 
         saving_path_confusion_matrix="trained_model/" + plot_name+ "-confusion_matrix.png"
         saving_path_roc = "trained_model/" + plot_name + "-ROC.png"
-        recall,precision,f1_score,false_positive_rate=get_recall_and_precision(true_Y,tf.math.round(predicted_Y_loaded_model),verbose=True)
+        recall,precision,f1_score,false_positive_rate=get_recall_and_precision(true_Y,my_round_fun(predicted_Y_loaded_model,threshold=hyper_parameters["threshold"]),verbose=True)
         plot_confusion_matrix(predicted_Y_loaded_model,true_Y,saving_path_confusion_matrix,recall=recall,precision=precision,f1_score=f1_score)
         plot_ROC(false_positive_rate,recall,saving_path_roc)
 
@@ -275,14 +294,40 @@ def draw_training_results(train_loss_list_average, valid_loss_list_average, test
             true_Y) == float("-inf") or np.max(true_Y) == float("inf"):
         pass
     else:
-        error = predicted_Y_loaded_model - true_Y
+        error = np.array(predicted_Y_loaded_model) - np.array(true_Y)
         plt.hist(error, bins=25)
         plt.xlabel("Prediction Error [occurence]")
         _ = plt.ylabel("Count")
         plt.savefig("trained_model/" + plot_name+ "-error-distribution.png")
         plt.clf()
 
+    
+def draw_weights_results(label,benchmark_name, graph_type,gathered_nodes_binary_classification_task,hyper_parameters,weights_list_train):
+  
+    draw_train_weights = [i["embedded_weights"] for i in weights_list_train]
+    draw_train_weights2 = [j["regression_weights"] for j in weights_list_train]
+    print("weights_list_train", draw_train_weights)
+    print("weights_list_train2", draw_train_weights2)
+    plt.plot(draw_train_weights, color="blue")
+    plt.plot(draw_train_weights2, color="red")
+    y_range=[-0.1,0.1]
+    plt.ylim(y_range)
+    plt.yticks(np.arange(min(y_range), max(y_range), 0.010))
+    plt.ylabel('Weights')
+    plt.xlabel('epochs')
+    embedded_weights_legend = mpatches.Patch(color='blue', label='embedded_weights')
+    egression_weights_legend = mpatches.Patch(color='red', label='regression_weights')
 
+    plt.legend(handles=[egression_weights_legend, embedded_weights_legend])
+    #regression_weights_legend = mpatches.Patch(color='green', label='regression_weights')
+    #plt.legend(handles=[embedded_weights_legend, regression_weights_legend])
+    plot_name=assemble_name(label,graph_type,benchmark_name,"Weights Graph",str(hyper_parameters["nodeFeatureDim"]),"num_layers",str(hyper_parameters["num_layers"]),"regression_hidden_layer_size",str(hyper_parameters["regression_hidden_layer_size"]),"threshold",str(hyper_parameters["threshold"]))
+    plt.savefig("trained_model/" + plot_name + ".png")
+    plt.clf()
+
+def draw_pixel_graph(label,benchmark_name, graph_type,gathered_nodes_binary_classification_task,hyper_parameters,weights_list_train):
+    draw_train_weights2 = [j["regression_weights"] for j in weights_list_train]
+    
 def write_train_results_to_log(dataset, predicted_Y_loaded_model, train_loss, valid_loss, mse_loaded_model_list,
                                mean_loss_list, accuracy_list,best_valid_epoch, hyper_parameters,benchmark="unknown", label="rank", graph_type="hyperEdgeHornGraph"):
     mean_loss_list_average = np.mean(mean_loss_list)
@@ -673,11 +718,11 @@ def form_predicate_occurrence_related_label_graph_sample(graphs_node_label_ids,g
                                                                                                          graphs_learning_labels):
         raw_data_graph.file_names.append(file_name)
         # node tokenization
-        #print("debug token_map", token_map)
+        print("debug token_map", token_map)
         #token map contains the same thing as token
-        #print("debug node_symbols", node_symbols)
+        print("debug node_symbols", node_symbols)
         tokenized_node_label_ids=tokenize_symbols(token_map,node_symbols)
-
+        print("debug tokenized_node_label_ids", tokenized_node_label_ids)
         raw_data_graph.labels.append(learning_labels)
 
         #catch label distribution
@@ -1005,3 +1050,23 @@ def get_class_weight(pos, neg, total):
     weight_for_0 = (1 / neg) * (total) / 2
     weight_for_1 = (1 / pos) * (total) / 2
     return weight_for_0,weight_for_1
+
+def get_test_loss_with_class_weight(class_weight,task_output,labels,from_logits=True):
+    #predicted_y = (lambda: task_output if from_logits == False else [logit(x) for x in task_output])()
+    #predicted_y=task_output
+    predicted_y=[logit(x) for x in task_output]
+    # description: implemented by exaggerating inputs
+    # weighted_prediction = [y_hat * class_weight["weight_for_1"] if y == 1 else y_hat for y, y_hat in zip(labels, predicted_y)]
+    # return tf.reduce_mean(tf.keras.losses.binary_crossentropy(labels,weighted_prediction,from_logits=from_logits))
+    # description: implemented by weighted_cross_entropy_with_logits
+    #print("class_weight",class_weight["weight_for_1"],class_weight["weight_for_0"])
+    return tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(labels,predicted_y,class_weight["weight_for_1"]))
+    # description: implemented by conditions
+    # ce = []
+    # for y, y_hat in zip(labels, predicted_y):
+    #     if y == 1:
+    #         ce.append(tf.keras.losses.binary_crossentropy([y], [y_hat], from_logits=from_logits) * class_weight[
+    #             "weight_for_1"])
+    #     elif y == 0:
+    #         ce.append(tf.keras.losses.binary_crossentropy([y], [y_hat], from_logits=from_logits))
+    # return tf.reduce_mean(ce)

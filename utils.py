@@ -288,3 +288,6 @@ def assemble_name(*args):
     for a in args:
         name=name+"-"+a
     return name[1:]
+
+def my_round_fun(num_list,threshold=0.5):
+    return  [1.0 if num>threshold else 0.0 for num in num_list]
