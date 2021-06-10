@@ -46,8 +46,8 @@ def train_on_graphs(benchmark_name="unknown",label="rank",force_read=False,train
     parameters["label_type"]=label
     parameters ["gathered_nodes_binary_classification_task"]=gathered_nodes_binary_classification_task
     parameters["threshold"]=hyper_parameters["threshold"]
-    max_epochs = 20
-    patience = 20
+    max_epochs = 100
+    patience = 100
     # parameters["add_self_loop_edges"]=False
     # parameters["tie_fwd_bkwd_edges"]=True
 
@@ -218,12 +218,13 @@ def train_on_graphs(benchmark_name="unknown",label="rank",force_read=False,train
                           mean_loss_list_average,
                           error_memory_model_average, true_Y, predicted_Y_loaded_model, label,
                           benchmark_name, graph_type,gathered_nodes_binary_classification_task,hyper_parameters)
-    draw_weights_results(label,benchmark_name, graph_type,gathered_nodes_binary_classification_task,hyper_parameters,weights_list_train)                      
+    #draw_weights_results(label,benchmark_name, graph_type,gathered_nodes_binary_classification_task,hyper_parameters,weights_list_train)                      
     write_train_results_to_log(dataset, predicted_Y_loaded_model, train_loss_average,
                                valid_loss_average, error_loaded_model, mean_loss_list, accuracy_average,
                                best_valid_epoch_average,hyper_parameters,
                                benchmark=benchmark_name, label=label, graph_type=graph_type)
-
+    draw_pixel_graph(label,benchmark_name, graph_type,gathered_nodes_binary_classification_task,hyper_parameters,weights_list_train)
+    draw_pixel_graph_regression(label,benchmark_name, graph_type,gathered_nodes_binary_classification_task,hyper_parameters,weights_list_train)
     pickleWrite(parameters, benchmark_name+"-"+label+"-parameters","/Users/sherry/Downloads/Systematic-Predicate-Abstraction-using-Machine-Learning-master/Heuristic_selection/src/trained_model/")
 
     return trained_model_path
@@ -326,8 +327,40 @@ def draw_weights_results(label,benchmark_name, graph_type,gathered_nodes_binary_
     plt.clf()
 
 def draw_pixel_graph(label,benchmark_name, graph_type,gathered_nodes_binary_classification_task,hyper_parameters,weights_list_train):
-    draw_train_weights2 = [j["regression_weights"] for j in weights_list_train]
+    #draw_train_weights2 = [j["regression_weights"] for j in weights_list_train]
+    #draw_train_weights2 = np.array(draw_train_weights2)
+    draw_train_weights = [i["embedded_weights"] for i in weights_list_train]
+    draw_train_weights = np.array(draw_train_weights)
+    tf.print("draw_train_weights", draw_train_weights.shape)
+    for i in range(1,10):
+        ax = plt.subplot(5, 2, i)
+        plt.imshow(draw_train_weights[i*10,:,:])
+        ax.set_xticks([])
+        ax.set_yticks([])
+        plt.title('epoch'+str(i*10),fontsize=7,loc='left',y=0.9) 
+                       
+    plot_name=assemble_name(label,str(i),graph_type,benchmark_name,"embedded_Weights_Graph",str(hyper_parameters["nodeFeatureDim"]),"num_layers",str(hyper_parameters["num_layers"]),"regression_hidden_layer_size",str(hyper_parameters["regression_hidden_layer_size"]),"threshold",str(hyper_parameters["threshold"]))
+    plt.savefig("trained_model/" + plot_name + ".png")
+
+def draw_pixel_graph_regression(label,benchmark_name, graph_type,gathered_nodes_binary_classification_task,hyper_parameters,weights_list_train):
+    #draw_train_weights2 = [j["regression_weights"] for j in weights_list_train]
+    #draw_train_weights2 = np.array(draw_train_weights2)
+    draw_train_weights_regression = [i["regression_weights"] for i in weights_list_train]
     
+    #print("regression_weights_before_drawing",draw_train_weights_regression )
+    draw_train_weights_regression = np.array(draw_train_weights_regression)
+    #print("regression_weights_before_drawing_array",draw_train_weights_regression )
+    tf.print("draw_train_weights_regression", draw_train_weights_regression.shape)
+    for i in range(1,10):
+        ax = plt.subplot(5, 2, i)
+        plt.imshow(draw_train_weights_regression[i*10,:,:])
+        ax.set_xticks([])
+        ax.set_yticks([])
+        plt.title('epoch'+str(i*10),fontsize=7,loc='left',y=0.9)                     
+    plot_name=assemble_name(label,str(i),graph_type,benchmark_name,"Regression_Weights_Graph",str(hyper_parameters["nodeFeatureDim"]),"num_layers",str(hyper_parameters["num_layers"]),"regression_hidden_layer_size",str(hyper_parameters["regression_hidden_layer_size"]),"threshold",str(hyper_parameters["threshold"]))
+    plt.savefig("trained_model/" + plot_name + ".png")
+        
+
 def write_train_results_to_log(dataset, predicted_Y_loaded_model, train_loss, valid_loss, mse_loaded_model_list,
                                mean_loss_list, accuracy_list,best_valid_epoch, hyper_parameters,benchmark="unknown", label="rank", graph_type="hyperEdgeHornGraph"):
     mean_loss_list_average = np.mean(mean_loss_list)

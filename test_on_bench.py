@@ -35,7 +35,7 @@ def main():
     # np.random.seed(0)
     # tf.random.set_seed(0)
 
-    hyper_parameters={"nodeFeatureDim":64,"num_layers":1,"regression_hidden_layer_size":[64],"threshold":0.5,"max_nodes_per_batch":100000}
+    hyper_parameters={"nodeFeatureDim":64,"num_layers":4,"regression_hidden_layer_size":[64],"threshold":0.5,"max_nodes_per_batch":100000}
     for label in label_list:
         #parameter_list.append(
         #     parameters(relative_path="../benchmarks/"+benchmark_name,
