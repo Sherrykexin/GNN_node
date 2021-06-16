@@ -1,0 +1,30 @@
+best_valid_epoch:65.0
+train loss:0.085559286
+valid loss:0.078727365
+test loss list:tf.Tensor(0.079169475, shape=(), dtype=float32)
+mean test loss:0.079169475
+mean loss list:tf.Tensor(0.052469134, shape=(), dtype=float32)
+mean mean loss:0.052469134
+accuracy list:[<tf.Tensor: shape=(), dtype=float64, numpy=0.9722222222222222>]
+mean accuracy:0.9722222222222222
+-------
+/Users/sherry/Downloads/Systematic-Predicate-Abstraction-using-Machine-Learning-master/Heuristic_selection/benchmarks/single-layer-graph-example/test_data/chc-lia-lin-0006_000.smt2
+true label:[0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+true label rank:[1 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]
+predicted label:tf.Tensor(
+[2.61396170e-04 4.26865965e-01 5.37584674e-06 1.14919454e-01
+ 4.82887226e-05 5.67239523e-03 3.07241082e-03 2.33596563e-03
+ 4.64235563e-06 4.35365928e-06 2.16990709e-04 2.01493502e-04
+ 6.73353672e-03 2.76222825e-03 4.26865965e-01 9.64820385e-04
+ 2.00020075e-02 2.43279374e-05 2.89258361e-03 5.74589491e-01
+ 4.92792875e-01 2.44230032e-04 1.87784433e-04 2.54923701e-02
+ 2.89258361e-03 5.88178635e-04 2.76222825e-03 1.38588848e-06
+ 6.73353672e-03 6.50856309e-05 1.04132295e-03 5.37584674e-06
+ 1.92812195e-06 9.64820385e-04 1.07832282e-04 2.61396170e-04], shape=(36,), dtype=float32)
+rounded label:tf.Tensor(
+[0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 1. 0. 0. 0. 0.
+ 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.], shape=(36,), dtype=float32)
+predicted label rank:[1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]
+mse:tf.Tensor(0.02635961, shape=(), dtype=float32)
+-------
+mean(mse_list):0.02635961

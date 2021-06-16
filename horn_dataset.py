@@ -12,10 +12,16 @@ import tf2_gnn
 from tf2_gnn.cli_utils.training_utils import train, log_line, make_run_id
 from tf2_gnn.data import DataFold, HornGraphSample, HornGraphDataset
 from tf2_gnn.models import InvariantArgumentSelectionTask, InvariantNodeIdentifyTask
-
+from tensorflow import keras
 from Miscellaneous import pickleWrite, pickleRead, drawBinaryLabelPieChart
 from dotToGraphInfo import parseArgumentsFromJson
 from utils import plot_confusion_matrix,get_recall_and_precision,plot_ROC,assemble_name,my_round_fun
+from tensorflow.keras.callbacks import TensorBoard
+from matplotlib.colors import from_levels_and_colors
+
+import tensorboard
+from datetime import datetime
+
 
 def train_on_graphs(benchmark_name="unknown",label="rank",force_read=False,train_n_times=1,path="../",file_type=".smt2",json_type=".JSON",form_label=False,GPU=False,pickle=True,hyper_parameters={}):
     gathered_nodes_binary_classification_task = ["predicate_occurrence_in_SCG", "argument_lower_bound_existence",
@@ -126,6 +132,8 @@ def train_on_graphs(benchmark_name="unknown",label="rank",force_read=False,train
         # process_train = multiprocessing.Process(train, args=(model,dataset,log,run_id,200,20,save_dir,quiet,None))
         # process_train.start()
         # process_train.join()
+        # Define the Keras TensorBoard callback.
+
 
         trained_model_path,train_loss_list,valid_loss_list,best_valid_epoch,train_metric_list,valid_metric_list,weights_list_train ,weights_list_valid = train(
             model=model,
@@ -225,6 +233,7 @@ def train_on_graphs(benchmark_name="unknown",label="rank",force_read=False,train
                                benchmark=benchmark_name, label=label, graph_type=graph_type)
     draw_pixel_graph(label,benchmark_name, graph_type,gathered_nodes_binary_classification_task,hyper_parameters,weights_list_train)
     draw_pixel_graph_regression(label,benchmark_name, graph_type,gathered_nodes_binary_classification_task,hyper_parameters,weights_list_train)
+    draw_pixel_graph_dense(label,benchmark_name, graph_type,gathered_nodes_binary_classification_task,hyper_parameters,weights_list_train)
     pickleWrite(parameters, benchmark_name+"-"+label+"-parameters","/Users/sherry/Downloads/Systematic-Predicate-Abstraction-using-Machine-Learning-master/Heuristic_selection/src/trained_model/")
 
     return trained_model_path
@@ -331,16 +340,34 @@ def draw_pixel_graph(label,benchmark_name, graph_type,gathered_nodes_binary_clas
     #draw_train_weights2 = np.array(draw_train_weights2)
     draw_train_weights = [i["embedded_weights"] for i in weights_list_train]
     draw_train_weights = np.array(draw_train_weights)
+   #draw_train_weights = normalization(draw_train_weights)
     tf.print("draw_train_weights", draw_train_weights.shape)
+    
+
     for i in range(1,10):
-        ax = plt.subplot(5, 2, i)
-        plt.imshow(draw_train_weights[i*10,:,:])
-        ax.set_xticks([])
-        ax.set_yticks([])
-        plt.title('epoch'+str(i*10),fontsize=7,loc='left',y=0.9) 
-                       
-    plot_name=assemble_name(label,str(i),graph_type,benchmark_name,"embedded_Weights_Graph",str(hyper_parameters["nodeFeatureDim"]),"num_layers",str(hyper_parameters["num_layers"]),"regression_hidden_layer_size",str(hyper_parameters["regression_hidden_layer_size"]),"threshold",str(hyper_parameters["threshold"]))
-    plt.savefig("trained_model/" + plot_name + ".png")
+        #ax = plt.subplot(5, 2, i)
+        #draw_train_weights[i*10,:,:] = normalization(draw_train_weights[i*10,:,:])
+        num_levels = 65
+        vmin, vmax = draw_train_weights[i*10,:,:].min(), draw_train_weights[i*10,:,:].max()
+        print("debug vmin,vmax:", vmin, vmax)
+        midpoint = 0
+        levels = np.linspace(vmin, vmax, num_levels)
+        midp = np.mean(np.c_[levels[:-1], levels[1:]], axis=1)
+        vals = np.interp(midp, [vmin, midpoint, vmax], [0, 4, 8])
+        colors = plt.cm.seismic(vals)
+        cmap, norm = from_levels_and_colors(levels, colors)
+        
+        plt.imshow(draw_train_weights[i*10,:,:],cmap = cmap, interpolation='none' )
+        #ax.set_xticks([])
+        #ax.set_yticks([])
+        plt.colorbar()
+        plt.title('epoch'+str(i*10),fontsize=7,loc='left') 
+        plot_name=assemble_name(label,str(i*10),graph_type,benchmark_name,"embedded_Weights_Graph",str(hyper_parameters["nodeFeatureDim"]),"num_layers",str(hyper_parameters["num_layers"]),"regression_hidden_layer_size",str(hyper_parameters["regression_hidden_layer_size"]),"threshold",str(hyper_parameters["threshold"]))
+        plt.savefig("trained_model/" + plot_name + ".png")
+        plt.clf()
+    
+    #plt.tick_params(labelbottom=False, labelleft=False)
+
 
 def draw_pixel_graph_regression(label,benchmark_name, graph_type,gathered_nodes_binary_classification_task,hyper_parameters,weights_list_train):
     #draw_train_weights2 = [j["regression_weights"] for j in weights_list_train]
@@ -352,14 +379,56 @@ def draw_pixel_graph_regression(label,benchmark_name, graph_type,gathered_nodes_
     #print("regression_weights_before_drawing_array",draw_train_weights_regression )
     tf.print("draw_train_weights_regression", draw_train_weights_regression.shape)
     for i in range(1,10):
-        ax = plt.subplot(5, 2, i)
-        plt.imshow(draw_train_weights_regression[i*10,:,:])
-        ax.set_xticks([])
-        ax.set_yticks([])
+        #draw_train_weights_regression[i*10,:,:] = normalization(draw_train_weights_regression[i*10,:,:])
+        num_levels = 65
+        vmin, vmax = draw_train_weights_regression[i*10,:,:].min(), draw_train_weights_regression[i*10,:,:].max()
+        print("debug vmin,vmax regression:", vmin, vmax)
+        midpoint = 0
+        levels = np.linspace(vmin, vmax, num_levels)
+        midp = np.mean(np.c_[levels[:-1], levels[1:]], axis=1)
+        vals = np.interp(midp, [vmin, midpoint, vmax], [0,4,8])
+        colors = plt.cm.inferno(vals)
+        cmap, norm = from_levels_and_colors(levels, colors)
+        plt.imshow(draw_train_weights_regression[i*10,:,:],cmap = cmap, interpolation='none' )
+        plt.colorbar()
+        plt.tick_params(labelbottom=False, labelleft=False)
+        #ax.set_xticks([])
+        #ax.set_yticks([])
         plt.title('epoch'+str(i*10),fontsize=7,loc='left',y=0.9)                     
-    plot_name=assemble_name(label,str(i),graph_type,benchmark_name,"Regression_Weights_Graph",str(hyper_parameters["nodeFeatureDim"]),"num_layers",str(hyper_parameters["num_layers"]),"regression_hidden_layer_size",str(hyper_parameters["regression_hidden_layer_size"]),"threshold",str(hyper_parameters["threshold"]))
-    plt.savefig("trained_model/" + plot_name + ".png")
+        plot_name=assemble_name(label,str(i*10),graph_type,benchmark_name,"Regression_Weights_Graph",str(hyper_parameters["nodeFeatureDim"]),"num_layers",str(hyper_parameters["num_layers"]),"regression_hidden_layer_size",str(hyper_parameters["regression_hidden_layer_size"]),"threshold",str(hyper_parameters["threshold"]))
+        plt.savefig("trained_model/" + plot_name + ".png")
+        plt.clf()
+    
         
+def draw_pixel_graph_dense(label,benchmark_name, graph_type,gathered_nodes_binary_classification_task,hyper_parameters,weights_list_train):
+    #draw_train_weights2 = [j["regression_weights"] for j in weights_list_train]
+    #draw_train_weights2 = np.array(draw_train_weights2)
+    draw_train_weights_dense = [i["dense_every_num_layers_weights"] for i in weights_list_train]
+    
+    #print("regression_weights_before_drawing",draw_train_weights_regression )
+    draw_train_weights_dense = np.array(draw_train_weights_dense)
+    #print("regression_weights_before_drawing_array",draw_train_weights_regression )
+    tf.print("draw_train_weights_dense", draw_train_weights_dense.shape)
+    for i in range(1,10):
+        #draw_train_weights_dense [i*10,:,:]= normalization(draw_train_weights_dense[i*10,:,:])
+        num_levels = 65
+        vmin, vmax = draw_train_weights_dense[i*10,:,:].min(), draw_train_weights_dense[i*10,:,:].max()
+        print("debug vmin,vmax dense:", vmin, vmax)
+        midpoint = 0
+        levels = np.linspace(vmin, vmax, num_levels)
+        midp = np.mean(np.c_[levels[:-1], levels[1:]], axis=1)
+        vals = np.interp(midp, [vmin, midpoint, vmax], [0, 4, 8])
+        colors = plt.cm.plasma(vals)
+        cmap, norm = from_levels_and_colors(levels, colors)
+        plt.imshow(draw_train_weights_dense[i*10,:,:],cmap = cmap, interpolation='none' )
+        #ax.set_xticks([])
+        #ax.set_yticks([]s
+        plt.colorbar()
+        plt.title('epoch'+str(i*10),fontsize=7,loc='left',y=0.9)                     
+        plot_name=assemble_name(label,str(i*10),graph_type,benchmark_name,"draw_train_weights_dense",str(hyper_parameters["nodeFeatureDim"]),"num_layers",str(hyper_parameters["num_layers"]),"regression_hidden_layer_size",str(hyper_parameters["regression_hidden_layer_size"]),"threshold",str(hyper_parameters["threshold"]))
+        plt.savefig("trained_model/" + plot_name + ".png")
+        plt.clf()
+
 
 def write_train_results_to_log(dataset, predicted_Y_loaded_model, train_loss, valid_loss, mse_loaded_model_list,
                                mean_loss_list, accuracy_list,best_valid_epoch, hyper_parameters,benchmark="unknown", label="rank", graph_type="hyperEdgeHornGraph"):
@@ -1103,3 +1172,7 @@ def get_test_loss_with_class_weight(class_weight,task_output,labels,from_logits=
     #     elif y == 0:
     #         ce.append(tf.keras.losses.binary_crossentropy([y], [y_hat], from_logits=from_logits))
     # return tf.reduce_mean(ce)
+
+def normalization(ori_matrix):
+    new_matrix = ori_matrix / ori_matrix.sum(axis=1, keepdims=True)
+    return new_matrix
